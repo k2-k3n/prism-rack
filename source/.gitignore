@@ -1,0 +1,6 @@
+/build/
+/dsp/build/
+/utility/build/
+/tools/make_assets
+/tools/make_assets.exe
+**/__pycache__/

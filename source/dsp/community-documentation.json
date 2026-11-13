@@ -1,0 +1,7 @@
+{
+  "description": "在 Prism Rack 里承担 Drive 和 Echo 两种处理。",
+  "readme": "# Prism Cell\n\n在 Prism Rack 里承担 Drive 和 Echo 两种处理。\n\n## 使用方法\n\n1. 先在 Resona Box 上安装本音频包。\n2. 安装并打开 Prism Rack 0.2.1。\n3. 在 App 界面使用上方和下方编码器控制音色与功能。\n\n## 配套关系\n\n- 音频包：`org.resona.demo.prism-cell`，版本 0.1.0\n- App：`org.resona.demo.prism-rack`，版本 0.2.0\n\n完整界面及双编码器的旋转、短按、长按说明见 Prism Rack 的社区项目页面。\n",
+  "release_notes": "",
+  "source_url": "https://github.com/k2-k3n/prism-rack/tree/main/source/dsp",
+  "category": ""
+}

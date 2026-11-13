@@ -1,0 +1,11 @@
+{
+  "name": "Prism Rack",
+  "id": "org.resona.demo.prism-rack",
+  "version": "0.2.1",
+  "api": 1,
+  "description": "",
+  "kind": "app",
+  "sources": [
+    "src/app.cpp"
+  ]
+}

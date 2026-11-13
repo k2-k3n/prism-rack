@@ -1,0 +1,41 @@
+{
+  "folder": "13-Prism-Rack",
+  "description": "可切场景的模块化吉他效果架，含 Drive、Echo、Gate 和 Trim。",
+  "app": {
+    "file": "App.rpk",
+    "id": "org.resona.demo.prism-rack",
+    "name": "Prism Rack",
+    "version": "0.2.1",
+    "kind": 1,
+    "bytes": 33280,
+    "sha256": "2d67dfca509a03ae8faf67fa8be45cb2fdb30e316729880d1679b5d4c43b984e",
+    "crc32": 26845715
+  },
+  "audio_packs": [
+    {
+      "file": "Audio-Cell.rpk",
+      "id": "org.resona.demo.prism-cell",
+      "name": "Prism Cell",
+      "version": "0.1.0",
+      "kind": 0,
+      "bytes": 1696,
+      "sha256": "3e0a8f521e3049f5ba4378354586633df914f8d1fa870b9580d0c6e3b1b6beec",
+      "crc32": 3742511718
+    },
+    {
+      "file": "Audio-Trim.rpk",
+      "id": "org.resona.demo.prism-trim",
+      "name": "Prism Trim",
+      "version": "0.1.0",
+      "kind": 0,
+      "bytes": 480,
+      "sha256": "7bea5340560bf79889f29cfa0a03da8b0340b7a957069808f5551131f1513cef",
+      "crc32": 1317277186
+    }
+  ],
+  "source": "source/",
+  "cover": "界面.png",
+  "license_file_present": true,
+  "host_build_check": "passed",
+  "community_upload": "not sent"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Prism Cell",
+  "id": "org.resona.demo.prism-cell",
+  "version": "0.1.0",
+  "api": 1,
+  "description": "",
+  "sources": [
+    "src/main.cpp"
+  ]
+}

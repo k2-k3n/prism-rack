@@ -1,0 +1,26 @@
+{
+  "controllerVersion": "0.2.0",
+  "enabled": true,
+  "entries": {
+    "mobile": "mobile/index.html",
+    "web": "web/index.html"
+  },
+  "entry": "mobile/index.html",
+  "format": "clcontrol",
+  "id": "org.resona.demo.prism-rack.controller",
+  "interfaces": [
+    "web",
+    "mobile"
+  ],
+  "name": "Prism Rack",
+  "permissions": [
+    "midi"
+  ],
+  "target": {
+    "appId": "org.resona.demo.prism-rack",
+    "appName": "Prism Rack",
+    "appVersion": "0.2.0",
+    "protocolVersion": 1
+  },
+  "version": 1
+}
