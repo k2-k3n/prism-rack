@@ -45,6 +45,8 @@ saved.
 
 ## The screen
 
+LIVE uses scene accents, segmented input/output meters and meter-driven activity markers on the route sketch. RACK highlights the selected processor and shows its adjustable parameter.
+
 - **LIVE**: the scene, Blend, what the scene does, any pads held on a controller, a schematic from the input
   (GTR or USB) through the gate to SUM / OUT, and input and output meters.
 - **RACK**: every processor with ON/OFF and its share of the audio period as a percentage and a bar.

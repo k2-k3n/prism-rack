@@ -1,7 +1,7 @@
 {
   "name": "Prism Rack",
   "id": "org.resona.demo.prism-rack",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "api": 1,
   "description": "",
   "kind": "app",

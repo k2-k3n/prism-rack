@@ -5,11 +5,11 @@
     "file": "App.rpk",
     "id": "org.resona.demo.prism-rack",
     "name": "Prism Rack",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "kind": 1,
-    "bytes": 33280,
-    "sha256": "2d67dfca509a03ae8faf67fa8be45cb2fdb30e316729880d1679b5d4c43b984e",
-    "crc32": 26845715
+    "bytes": 33872,
+    "sha256": "296f71793be459add0b0fc486f821b16fbad213945a7af1c8df58b6b1d52184d",
+    "crc32": 2249111345
   },
   "audio_packs": [
     {

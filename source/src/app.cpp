@@ -72,6 +72,7 @@ struct State
     int timerRc;
     int ready, rc, grow, preview;
     uint8_t inLevel, outLevel, cpu;
+    unsigned uiIn, uiOut;
     resona_effects_status status;
     resona_program_resources chain;
     char notice[52];
@@ -890,6 +891,26 @@ void event(void *, const resona_app_event *e)
     }
 #endif
 }
+// Animate a signal marker along a cable only while its route has signal.
+void cable(gfx::Canvas &c, int x, int y, int endX, int endY, bool powered,
+           uint16_t tint, unsigned phase)
+{
+    c.line(x, y, endX, endY, powered ? tint : gfx::EDGE);
+    if (!powered)
+        return;
+    const int progress = (int)(phase % 100);
+    const int px = x + (endX - x) * progress / 100;
+    const int py = y + (endY - y) * progress / 100;
+    c.rect(px - 1, py - 1, 3, 3, gfx::WHITE);
+}
+
+void meter(gfx::Canvas &c, int x, unsigned level, uint16_t tint)
+{
+    for (unsigned i = 0; i < 12; ++i)
+        c.rect(x + (int)i * 8, 138, 6, 7,
+               level * 12 > i * 90 ? (i >= 10 ? gfx::AMBER : tint) : gfx::EDGE);
+}
+
 void frame(void *, uint32_t)
 {
 #ifdef RESONA_DEMO_BENCH
@@ -932,9 +953,17 @@ void frame(void *, uint32_t)
     if (now - S->lastStatus >= 500)
         metrics();
     ctl::sync(P, S->link, kBind, kBinds, now);
-    if (S->lastDraw && now - S->lastDraw < 80)
+    if (S->lastDraw && now - S->lastDraw < 32)
         return;
     S->lastDraw = now;
+    if (S->page == 0 && S->ready)
+    {
+        P->meters(&S->inLevel, &S->outLevel, nullptr);
+        const unsigned in = (unsigned)clamp(S->inLevel, 0, 9) * 10u;
+        const unsigned out = (unsigned)clamp(S->outLevel, 0, 9) * 10u;
+        S->uiIn = in > S->uiIn ? in : (S->uiIn * 3 + in) / 4;
+        S->uiOut = out > S->uiOut ? out : (S->uiOut * 3 + out) / 4;
+    }
     uint32_t start = P->millis();
     gfx::Canvas c{S->h->pixels, 320};
     c.clear(gfx::BG);
@@ -943,13 +972,17 @@ void frame(void *, uint32_t)
         gfx::splash(c, (now - S->start) / 175);
     else
     {
-        c.text(12, 10, 2, gfx::WHITE, "PRISM RACK");
-        c.text(244, 12, 1, gfx::CYAN,
-               S->preview     ? "SIM / UI"
-               : S->page == 0 ? "LIVE"
-               : S->page == 1 ? "RACK"
-                              : "SDK LAB");
-        c.rect(12, 32, 296, 1, gfx::EDGE);
+        const uint16_t navy = RESONA_RGB(9, 23, 36);
+        const uint16_t panel = RESONA_RGB(15, 35, 49);
+        const uint16_t lavender = RESONA_RGB(175, 158, 245);
+        const uint16_t theme = S->activeScene == 0 ? gfx::CYAN :
+                               S->activeScene == 1 ? gfx::AMBER : lavender;
+        c.clear(navy);
+        c.rect(0, 0, 320, 2, theme);
+        c.text(12, 11, 2, gfx::WHITE, "PRISM RACK");
+        c.rect(259, 8, 49, 19, panel);
+        c.text(271, 14, 1, theme, S->page == 0 ? "LIVE" : S->page == 1 ? "RACK" : "LAB");
+        c.rect(12, 33, 296, 1, gfx::EDGE);
         if (S->waiting)
         {
             c.text(14, 58, 2, gfx::AMBER, "CPU LIMIT");
@@ -965,79 +998,101 @@ void frame(void *, uint32_t)
         }
         else if (S->page == 0)
         {
-            c.text(12, 44, 3, gfx::WHITE, scenes[S->activeScene]);
+            const bool bypass = S->activeBypass != 0;
+            const bool input = S->uiIn >= 5;
+            const bool output = S->uiOut >= 5;
+            const bool signal = input && output;
+            const unsigned phase = now / 5u;
+
+            c.text(13, 43, 3, theme, scenes[S->activeScene]);
+            c.text(14, 69, 1, gfx::MUTED, bypass ? "BYPASS" :
+                   S->activeScene == 0 ? "CLEAN" : S->activeScene == 1 ? "SERIES" : "PARALLEL");
+            c.text(209, 44, 1, gfx::MUTED, "BLEND");
             P->format(t, sizeof t, "%u%%", S->activeMix);
-            c.text(224, 46, 3, gfx::CYAN, t);
-            c.text(14, 79, 1, gfx::MUTED,
-                   S->activeBypass       ? "BYPASS / RESERVATIONS KEPT"
-                   : S->activeScene == 2 ? "PARALLEL DRIVE + ECHO"
-                   : S->activeScene == 1 ? "SERIAL DRIVE INTO ECHO"
-                                         : "CLEAN GAIN / MONO TO STEREO");
+            c.text(241, 43, 2, gfx::WHITE, t);
+            c.bar(209, 62, 98, 4, S->activeMix, 100, theme);
             if (S->fire || S->dub || S->kill || S->dry)
             {
                 P->format(t, sizeof t, "%s%s%s%s", S->fire ? " FIRE" : "", S->dub ? " DUB" : "",
                           S->kill ? " KILL" : "", S->dry ? " DRY" : "");
-                c.text(306 - 6 * (int)strlen(t), 79, 1, gfx::AMBER, t);
+                c.text(307 - 6 * (int)strlen(t), 73, 1, gfx::AMBER, t);
             }
-            c.text(12, 112, 1, gfx::MUTED, S->input ? "USB" : "GTR");
-            c.line(32, 115, 48, 115, gfx::EDGE);
-            c.frame(48, 101, 42, 27, gfx::EDGE);
-            c.text(58, 112, 1, gfx::WHITE, "GATE");
-            if (S->activeScene == 2 && !S->activeBypass)
+
+            c.rect(12, 84, 296, 46, panel);
+            c.text(20, 102, 1, gfx::WHITE, S->input ? "USB" : "GTR");
+            c.text(280, 102, 1, gfx::WHITE, "OUT");
+            if (bypass)
             {
-                c.line(90, 115, 112, 98, gfx::CYAN);
-                c.line(90, 115, 112, 137, gfx::AMBER);
-                c.frame(112, 90, 70, 20, gfx::CYAN);
-                c.text(132, 97, 1, gfx::CYAN, "DRIVE");
-                c.frame(112, 126, 70, 20, gfx::AMBER);
-                c.text(135, 133, 1, gfx::AMBER, "ECHO");
-                c.line(182, 98, 212, 115, gfx::CYAN);
-                c.line(182, 137, 212, 115, gfx::AMBER);
+                cable(c, 47, 105, 274, 105, signal, gfx::MUTED, phase);
             }
             else
             {
-                c.line(90, 115, 112, 115, gfx::EDGE);
-                c.frame(112, 101, 70, 27, gfx::CYAN);
-                c.text(126, 112, 1, gfx::CYAN,
-                       S->activeBypass       ? "DRY"
-                       : S->activeScene == 1 ? "DRV/ECHO"
-                                             : "TRIM");
-                c.line(182, 115, 212, 115, gfx::EDGE);
+                c.frame(64, 96, 38, 19, gfx::EDGE);
+                c.text(71, 102, 1, gfx::WHITE, "GATE");
+                cable(c, 47, 105, 63, 105, input, gfx::CYAN, phase);
+                if (S->activeScene == 2)
+                {
+                    const bool drive = signal && S->aOn, echo = signal && S->bOn;
+                    cable(c, 102, 105, 133, 94, drive, gfx::CYAN, phase);
+                    cable(c, 102, 105, 133, 119, echo, gfx::AMBER, phase + 40);
+                    c.text(142, 91, 1, S->aOn ? gfx::CYAN : gfx::MUTED, "DRIVE");
+                    c.text(142, 116, 1, S->bOn ? gfx::AMBER : gfx::MUTED, "ECHO");
+                    cable(c, 179, 94, 244, 105, drive, gfx::CYAN, phase);
+                    cable(c, 179, 119, 244, 105, echo, gfx::AMBER, phase + 40);
+                }
+                else
+                {
+                    cable(c, 102, 105, 125, 105, signal, theme, phase);
+                    if (S->activeScene == 0)
+                        c.text(151, 102, 1, theme, "TRIM");
+                    else
+                    {
+                        c.text(129, 102, 1, S->aOn ? theme : gfx::MUTED, "DRIVE");
+                        cable(c, 162, 105, 176, 105, signal, theme, phase);
+                        c.text(182, 102, 1, S->bOn ? theme : gfx::MUTED, "ECHO");
+                    }
+                    cable(c, 213, 105, 244, 105, signal, theme, phase);
+                }
+                cable(c, 244, 105, 274, 105, output, theme, phase);
             }
-            c.frame(214, 101, 92, 27, gfx::EDGE);
-            c.text(226, 112, 1, gfx::WHITE, "SUM / OUT");
             c.text(14, 138, 1, gfx::MUTED, "IN");
-            c.bar(30, 139, 58, 3, S->inLevel, 9, gfx::CYAN);
-            c.text(214, 138, 1, gfx::MUTED, "OUT");
-            c.bar(238, 139, 68, 3, S->outLevel, 9, gfx::AMBER);
+            meter(c, 34, S->uiIn, gfx::CYAN);
+            c.text(181, 138, 1, gfx::MUTED, "OUT");
+            meter(c, 211, S->uiOut, theme);
         }
         else if (S->page == 1)
         {
-            unsigned first = (S->selected / 5) * 5;
-            for (unsigned i = first; i < first + 5 && i < 5 + S->count; i++)
+            const unsigned first = S->selected / 5 * 5;
+            for (unsigned i = first; i < first + 5 && i < 5 + S->count; ++i)
             {
-                int y = 42 + (i - first) * 20;
-                uint32_t h = handleAt(i);
+                const int y = 39 + (int)(i - first) * 19;
+                const bool selected = i == S->selected;
                 resona_effect_info n{};
-                fx.info(h, &n);
-                if (i == S->selected)
-                    c.rect(12, y - 2, 296, 18, gfx::CARD);
+                const bool known = S->ready && fx.info(handleAt(i), &n) == 0;
+                const uint16_t state = !known ? gfx::MUTED : n.enabled ? gfx::CYAN : gfx::AMBER;
+                c.rect(12, y, 296, 17, selected ? panel : gfx::BG);
+                if (selected)
+                    c.rect(12, y, 3, 17, theme);
                 P->format(t, sizeof t, "%02u %s", i + 1, nodes[i < 5 ? i : 5]);
-                c.text(18, y + 3, 1, i == S->selected ? gfx::CYAN : gfx::WHITE, t);
-                P->format(t, sizeof t, "%u%%",
-                          S->chain.period_ticks ? n.last_ticks * 100 / S->chain.period_ticks : 0);
-                c.text(208, y + 3, 1, n.enabled ? gfx::MUTED : gfx::AMBER,
-                       n.enabled ? "ON" : "OFF");
-                c.text(242, y + 3, 1, n.enabled ? gfx::CYAN : gfx::MUTED, t);
-                c.bar(278, y + 3, 22, 6, n.last_ticks, S->chain.period_ticks, gfx::CYAN);
+                c.text(20, y + 5, 1, selected ? gfx::WHITE : gfx::MUTED, t);
+                c.rect(184, y + 6, 5, 5, state);
+                c.text(195, y + 5, 1, state, !known ? "--" : n.enabled ? "ON" : "OFF");
+                const unsigned cpu = S->chain.period_ticks ? n.last_ticks * 100 / S->chain.period_ticks : 0;
+                if (known)
+                {
+                    P->format(t, sizeof t, "%u%%", cpu);
+                    c.text(228, y + 5, 1, gfx::MUTED, t);
+                    c.bar(266, y + 6, 33, 5, cpu, 25, state);
+                }
             }
             if (S->selected == 2)
-                P->format(t, sizeof t, "E2 DRIVE %u%% / PRESS BYPASS", S->drive);
+                P->format(t, sizeof t, "TURN: DRIVE %u%%", S->drive);
             else if (S->selected == 3)
-                P->format(t, sizeof t, "E2 TIME %uMS / PRESS BYPASS", S->delay);
+                P->format(t, sizeof t, "TURN: TIME %uMS", S->delay);
             else
-                P->format(t, sizeof t, "E2 PRESS TO BYPASS THIS NODE");
-            c.text(14, 143, 1, gfx::MUTED, t);
+                t[0] = 0;
+            c.text(14, 138, 1, theme, t);
+            c.text(208, 138, 1, gfx::MUTED, "PRESS: ON/OFF");
         }
 #ifdef RESONA_DEMO_BENCH
         else
@@ -1060,7 +1115,8 @@ void frame(void *, uint32_t)
         }
 #endif
         c.rect(12, 151, 296, 1, gfx::EDGE);
-        c.text(12, 159, 1, S->rc < 0 ? gfx::RED : gfx::MUTED, S->notice);
+        P->format(t, sizeof t, "%.40s", S->preview ? "" : S->notice);
+        c.text(12, 159, 1, S->rc < 0 ? gfx::RED : gfx::MUTED, t);
         P->format(t, sizeof t, "CPU%u", S->cpu);
         c.text(266, 159, 1, gfx::CYAN, t);
     }
