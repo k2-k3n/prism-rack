@@ -2,7 +2,7 @@
 
 ![Prism Rack](community-cover.png)
 
-在 GLASS、EMBER 和 HALO 三个场景之间切换。想单独调 Drive 或 Echo 时，短按上方旋钮进 RACK 页。
+在 GLASS、EMBER 和 HALO 三个场景之间切换。短按上方编码器打开 RACK，可单独调 Drive 或 Echo，也能开关选中的处理器。
 
 ## 配套音频包
 
@@ -13,10 +13,12 @@
 
 ## 两个编码器
 
-| 页面／模式 | 上方旋转 | 上方短按 | 上方长按 | 下方旋转 | 下方短按 | 下方长按／按住 |
+| 页面／模式 | 上方旋转 | 上方短按 | 上方长按 | 下方旋转 | 下方短按 | 下方长按 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Prism Rack（LIVE 页） | 选 GLASS／EMBER／HALO 场景 | 切到 RACK 页 | 保存设置 | 调整体 Blend | 整架旁路开／关 | 保存设置 |
-| Prism Rack（RACK 页） | 选择处理器 | 切回 LIVE 页 | 保存设置 | 选中 Cell A 时调 Drive；选中 Cell B 时调 Delay 时间；其他选中项无旋转调节 | 当前处理器开／关 | 保存设置 |
+| LIVE | 切换 GLASS、EMBER、HALO | 切到 RACK | 保存设置 | 调整体 Blend，每格 2% | 开关整架旁路 | 保存设置 |
+| RACK | 选择处理器 | 回到 LIVE | 保存设置 | 选 Cell A 调 Drive，选 Cell B 调 Echo 延迟（40–500 ms），其他处理器无旋转功能 | 开关选中的处理器 | 保存设置 |
+
+两页都可长按任一编码器保存设置。处理器的临时开关状态不会保存。
 
 ## 项目详细说明
 
@@ -32,8 +34,8 @@ scenes: GLASS, EMBER and HALO. The two user packs are the nested `dsp/` (Prism C
 | Control | LIVE | RACK |
 |---|---|---|
 | SELECTOR (top) turn | scene: GLASS, EMBER, HALO | select a processor |
-| SELECTOR click | next page | next page |
-| CUSTOMIZE (bottom) turn | Blend, 2 % per detent | Cell A drive (2 % per detent) or Cell B delay time, when one is selected |
+| SELECTOR click | open RACK | return to LIVE |
+| CUSTOMIZE (bottom) turn | Blend, 2 % per detent | Cell A drive (2 % per detent) or Cell B delay time (40–500 ms). Other processors have no turn action |
 | CUSTOMIZE click | rack bypass on/off | selected processor on/off |
 | Long press either | save settings | save settings |
 
